@@ -1,0 +1,2889 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RonixFixes — Community Fix Repository</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #1a0a2e;
+      --bg-mid: #2d1045;
+      --bg-card: #3a1558;
+      --bg-hover: #4a1d6e;
+      --border: #5a2a80;
+      --border-bright: #7b3fa8;
+      --accent: #b06aff;
+      --accent2: #ff6bdf;
+      --text: #e8d4ff;
+      --text-muted: #9a78b8;
+      --text-dim: #6b508a;
+      --green: #4fffb0;
+      --red: #ff6b6b;
+      --yellow: #ffd96b;
+      --blue: #6bc5ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0015;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .ripple {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+      transform: translate(-50%, -50%) scale(0);
+      animation: rippleOut 0.7s ease-out forwards;
+    }
+
+    @keyframes rippleOut {
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .topbar,
+    .main {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: rgba(20, 5, 35, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 56px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      margin-right: 28px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: none border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .logo-text span {
+      color: var(--accent);
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: stretch;
+      height: 100%;
+      gap: 0;
+      flex: 1;
+    }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--text);
+      background: rgba(176, 106, 255, 0.06);
+    }
+
+    .nav-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(176, 106, 255, 0.08);
+    }
+
+    .nav-tab .tab-icon {
+      margin-right: 6px;
+      font-size: 13px;
+    }
+
+    .nav-tab .tab-count {
+      margin-left: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #b06aff, #7b3fa8);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(176, 106, 255, 0.3);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(176, 106, 255, 0.5);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 15vh 24px 32px 24px;
+    }
+
+    /* ── HERO SEARCH ── */
+    .hero {
+      margin-bottom: 64px;
+      text-align: center;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(58, 21, 88, 0.7);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px 14px 44px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+      backdrop-filter: blur(6px);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(176, 106, 255, 0.15), 0 4px 20px rgba(176, 106, 255, 0.1);
+      background: rgba(74, 29, 110, 0.7);
+    }
+
+    .search-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      justify-content: center;
+    }
+
+    .stag {
+      font-size: 10px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: rgba(58, 21, 88, 0.4);
+    }
+
+    .stag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(176, 106, 255, 0.1);
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(58, 21, 88, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11px;
+    }
+
+    .stat-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    /* ── LAYOUT GRID ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 24px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sort-btn {
+      font-size: 10px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 10px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.15s;
+    }
+
+    .sort-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── FIX CARDS ── */
+    .fix-card {
+      background: rgba(42, 14, 68, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      animation: launchUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .sidebar-card:nth-child(1) {
+      animation-delay: 0.4s;
+    }
+
+    .sidebar-card:nth-child(2) {
+      animation-delay: 0.8s;
+    }
+
+    .sidebar-card:nth-child(3) {
+      animation-delay: 1.2s;
+    }
+
+    @keyframes launchUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .fix-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: transparent;
+      transition: background 0.2s;
+    }
+
+    .fix-card:hover {
+      border-color: var(--border-bright);
+      background: rgba(74, 29, 110, 0.5);
+      transform: translateX(2px);
+    }
+
+    .fix-card:hover::before {
+      background: var(--accent);
+    }
+
+    .fix-card.trending::before {
+      background: var(--red);
+    }
+
+    .fix-card.trending {
+      border-color: rgba(255, 107, 107, 0.3);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      line-height: 1.3;
+    }
+
+    .card-badges {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .badge-red {
+      background: rgba(255, 107, 107, 0.15);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .badge-green {
+      background: rgba(79, 255, 176, 0.12);
+      color: #4fffb0;
+      border: 1px solid rgba(79, 255, 176, 0.25);
+    }
+
+    .badge-yellow {
+      background: rgba(255, 217, 107, 0.12);
+      color: #ffd96b;
+      border: 1px solid rgba(255, 217, 107, 0.25);
+    }
+
+    .badge-blue {
+      background: rgba(107, 197, 255, 0.12);
+      color: #6bc5ff;
+      border: 1px solid rgba(107, 197, 255, 0.25);
+    }
+
+    .badge-purple {
+      background: rgba(176, 106, 255, 0.12);
+      color: #b06aff;
+      border: 1px solid rgba(176, 106, 255, 0.3);
+    }
+
+    .card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .card-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .trending-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: #ff6b6b;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .trending-label .fire {
+      font-size: 11px;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: sticky;
+      top: 80px;
+    }
+
+    .sidebar-card {
+      background: rgba(42, 14, 68, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      animation: launchUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .os-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .os-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .os-item:hover {
+      background: rgba(176, 106, 255, 0.08);
+      border-color: var(--border);
+    }
+
+    .os-item.active {
+      background: rgba(176, 106, 255, 0.12);
+      border-color: var(--border-bright);
+    }
+
+    .os-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .os-icon {
+      font-size: 15px;
+    }
+
+    .os-count {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .error-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .etag {
+      font-size: 10px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: rgba(58, 21, 88, 0.4);
+    }
+
+    .etag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(176, 106, 255, 0.1);
+    }
+
+    .contrib-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .contrib-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .contrib-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .contrib-name {
+      color: var(--text);
+      flex: 1;
+    }
+
+    .contrib-fixes {
+      color: var(--text-dim);
+      font-size: 10px;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(10, 2, 20, 0.85);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-mid);
+      border: 1px solid var(--border-bright);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 580px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(176, 106, 255, 0.1);
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .modal-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .modal label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    .modal input,
+    .modal textarea,
+    .modal select {
+      width: 100%;
+      background: rgba(26, 10, 46, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .modal input:focus,
+    .modal textarea:focus,
+    .modal select:focus {
+      border-color: var(--accent);
+    }
+
+    .modal textarea {
+      height: 80px;
+      resize: vertical;
+    }
+
+    .modal select option {
+      background: var(--bg-mid);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    .btn-cancel {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+
+    .btn-post {
+      background: linear-gradient(135deg, #b06aff, #7b3fa8);
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(176, 106, 255, 0.3);
+    }
+
+    .btn-post:hover {
+      box-shadow: 0 4px 14px rgba(176, 106, 255, 0.5);
+    }
+
+    /* ── DETAIL PANEL (now a centered modal) ── */
+    .detail-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: rgba(10, 2, 20, 0.85);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .detail-panel.open {
+      display: flex;
+    }
+
+    .detail-panel-inner {
+      background: var(--bg-mid);
+      border: 1px solid var(--border-bright);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(176, 106, 255, 0.12);
+      animation: popIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+      position: relative;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.94) translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .panel-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .panel-close:hover {
+      color: var(--text);
+    }
+
+    .panel-os {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .panel-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .fix-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .fix-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(176, 106, 255, 0.2);
+      border: 1px solid var(--border-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-text {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    code {
+      background: rgba(176, 106, 255, 0.1);
+      border: 1px solid rgba(176, 106, 255, 0.2);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 11px;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .code-block {
+      background: rgba(10, 2, 20, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      font-size: 11px;
+      color: #c8a0ff;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    .helpful-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-helpful {
+      flex: 1;
+      padding: 8px;
+      border-radius: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--border);
+      background: rgba(58, 21, 88, 0.4);
+      color: var(--text-muted);
+    }
+
+    .btn-helpful:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .btn-not-helpful:hover {
+      border-color: var(--red) !important;
+      color: var(--red) !important;
+    }
+
+
+    /* ── GROUP HEADERS ── */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 20px 0 8px;
+      padding: 0 4px;
+    }
+
+    .group-header:first-child {
+      margin-top: 0;
+    }
+
+    .group-icon {
+      font-size: 16px;
+    }
+
+    .group-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.2px;
+    }
+
+    .group-count {
+      font-size: 10px;
+      color: var(--text-dim);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1px 7px;
+      margin-left: 2px;
+    }
+
+
+    /* ── CONTRIBUTORS GLOW CARD ── */
+    .contrib-card-glow {
+      border-color: rgba(176, 106, 255, 0.5) !important;
+      box-shadow: 0 0 20px rgba(176, 106, 255, 0.15), 0 0 40px rgba(176, 106, 255, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contrib-card-glow::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(176, 106, 255, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .contrib-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .contrib-item:hover {
+      background: rgba(176, 106, 255, 0.08);
+    }
+
+    /* Rank badge */
+    .contrib-rank-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .contrib-rank-1 .contrib-rank-badge {
+      background: linear-gradient(135deg, #ffd700, #b8860b);
+      color: #000;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    }
+
+    .contrib-rank-2 .contrib-rank-badge {
+      background: linear-gradient(135deg, #c0c0c0, #808080);
+      color: #000;
+      box-shadow: 0 0 6px rgba(192, 192, 192, 0.5);
+    }
+
+    .contrib-rank-3 .contrib-rank-badge {
+      background: linear-gradient(135deg, #cd7f32, #8b4513);
+      color: #fff;
+      box-shadow: 0 0 6px rgba(205, 127, 50, 0.4);
+    }
+
+    /* Avatar with image support */
+    .contrib-avatar-wrap {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contrib-rank-1 .contrib-avatar-wrap {
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.2);
+      border: 1px solid rgba(255, 215, 0, 0.4);
+    }
+
+    .contrib-rank-2 .contrib-avatar-wrap {
+      box-shadow: 0 0 8px rgba(192, 192, 192, 0.4);
+      border: 1px solid rgba(192, 192, 192, 0.3);
+    }
+
+    .contrib-rank-3 .contrib-avatar-wrap {
+      box-shadow: 0 0 6px rgba(205, 127, 50, 0.3);
+      border: 1px solid rgba(205, 127, 50, 0.3);
+    }
+
+    .contrib-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .contrib-avatar-fallback {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+    }
+
+    /* Name + role stacked */
+    .contrib-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .contrib-name {
+      color: var(--text);
+      font-weight: 600;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .contrib-role {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .contrib-fixes {
+      color: var(--text-dim);
+      font-size: 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Rank 1 glowing name */
+    .contrib-rank-1 .contrib-name {
+      background: linear-gradient(90deg, #ffd700, #ffaa00, #ffd700);
+      background-size: 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: goldShimmer 2.5s linear infinite;
+    }
+
+    @keyframes goldShimmer {
+      0% {
+        background-position: 200% center;
+      }
+
+      100% {
+        background-position: -200% center;
+      }
+    }
+
+    /* Rank 2 silver shimmer */
+    .contrib-rank-2 .contrib-name {
+      background: linear-gradient(90deg, #c0c0c0, #e8e8e8, #c0c0c0);
+      background-size: 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: silverShimmer 3s linear infinite;
+    }
+
+    @keyframes silverShimmer {
+      0% {
+        background-position: 200% center;
+      }
+
+      100% {
+        background-position: -200% center;
+      }
+    }
+
+    /* Demoted style */
+    .contrib-rank-3 .contrib-name {
+      color: var(--text-muted);
+      text-decoration: line-through;
+      -webkit-text-fill-color: unset;
+    }
+
+
+    /* ── MOBILE CONTRIBUTORS SECTION ── */
+    .mobile-contrib-section {
+      display: none;
+      background: rgba(42, 14, 68, 0.6);
+      border: 1px solid rgba(176, 106, 255, 0.5);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 20px;
+      box-shadow: 0 0 20px rgba(176, 106, 255, 0.12);
+    }
+
+    .mac-mobile-label {
+      display: none;
+    }
+
+    .mac-desktop-label {
+      display: inline;
+    }
+
+    @media (max-width: 768px) {
+      .mac-mobile-label {
+        display: inline;
+      }
+
+      .mac-desktop-label {
+        display: none;
+      }
+
+      .mobile-contrib-section {
+        display: block;
+      }
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-dim);
+      font-size: 12px;
+      display: none;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+
+      /* Layout */
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        padding: 12vh 12px 100px 12px;
+      }
+
+      /* Topbar — hide nav tabs, show hamburger */
+      .topbar {
+        padding: 0 14px;
+        height: 52px;
+      }
+
+      .nav-tabs {
+        display: none;
+      }
+
+      .logo {
+        margin-right: auto;
+      }
+
+      .logo-text {
+        font-size: 13px;
+      }
+
+      .logo-icon {
+        width: 30px;
+        height: 30px;
+      }
+
+      .topbar-right {
+        gap: 8px;
+      }
+
+      .lang-btn span#lang-btn-label {
+        display: none;
+      }
+
+      .lang-btn {
+        padding: 7px 8px;
+      }
+
+      .btn-submit {
+        padding: 6px 10px;
+        font-size: 10px;
+      }
+
+      /* Mobile nav bar at bottom */
+      .mobile-nav {
+        display: flex !important;
+      }
+
+      /* Fix cards */
+      .fix-card {
+        padding: 14px;
+      }
+
+      .fix-title {
+        font-size: 14px;
+      }
+
+      .card-footer {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      /* Detail panel — full screen bottom sheet */
+      .detail-panel {
+        padding: 0;
+        align-items: flex-end;
+      }
+
+      .detail-panel-inner {
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        padding: 20px 18px 32px;
+        animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+          opacity: 0.5;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .panel-close {
+        top: 14px;
+        right: 14px;
+      }
+
+      .panel-title {
+        font-size: 17px;
+        padding-right: 28px;
+      }
+
+      /* Drag handle */
+      .detail-panel-inner::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        margin: 0 auto 16px;
+      }
+
+      /* Hero */
+      .hero-title {
+        font-size: clamp(28px, 8vw, 44px);
+      }
+
+      .hero-sub {
+        font-size: 12px;
+      }
+
+      .search-bar {
+        font-size: 13px;
+        padding: 13px 16px;
+      }
+
+      .stats-row {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .stat-pill {
+        font-size: 10px;
+        padding: 6px 12px;
+      }
+
+      .quick-tags {
+        gap: 6px;
+      }
+
+      .quick-tag {
+        font-size: 10px;
+        padding: 4px 10px;
+      }
+
+      /* Lang modal */
+      .lang-modal {
+        width: 100%;
+        border-radius: 20px 20px 0 0;
+        max-height: 85vh;
+      }
+
+      .lang-modal-overlay {
+        align-items: flex-end;
+      }
+
+      .lang-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      /* Sort bar */
+      .sort-bar {
+        padding: 0 12px;
+      }
+    }
+
+    /* Mobile bottom nav */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(20, 5, 35, 0.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      z-index: 200;
+      padding: 8px 0 env(safe-area-inset-bottom, 8px);
+    }
+
+    .mobile-nav-inner {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 16px;
+      border-radius: 10px;
+      transition: all 0.2s;
+      font-size: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: none;
+      background: none;
+    }
+
+    .mobile-nav-item.active {
+      color: var(--accent);
+    }
+
+    .mobile-nav-item svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .mobile-nav-item .nav-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 2px;
+      display: none;
+    }
+
+    .mobile-nav-item.active .nav-dot {
+      display: block;
+    }
+
+    /* Custom Translate */
+    .goog-te-banner-frame,
+    .goog-te-banner {
+      display: none !important;
+    }
+
+    body {
+      top: 0 !important;
+    }
+
+    #google_translate_element {
+      display: none;
+    }
+
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(58, 21, 88, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .lang-btn:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(176, 106, 255, 0.15);
+    }
+
+    .lang-btn svg {
+      flex-shrink: 0;
+    }
+
+    .lang-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 4, 20, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lang-modal-overlay.open {
+      display: flex;
+    }
+
+    .lang-modal {
+      background: #1e0d35;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 560px;
+      max-width: 95vw;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+      animation: slideUp 0.2s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .lang-modal-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .lang-modal-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .lang-search-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 12px;
+    }
+
+    .lang-search-wrap svg {
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .lang-search {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      width: 100%;
+      padding: 8px 0;
+    }
+
+    .lang-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .lang-close:hover {
+      color: var(--text);
+    }
+
+    .lang-list {
+      overflow-y: auto;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .lang-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .lang-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .lang-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .lang-item {
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lang-item:hover {
+      background: rgba(176, 106, 255, 0.1);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .lang-item.active {
+      background: rgba(176, 106, 255, 0.2);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .lang-item-flag {
+      font-size: 16px;
+    }
+
+    .lang-no-results {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a class="logo" href="#">
+      <div class="logo-icon"><img src="Screenshot_2026-02-12_231205-removebg-preview.png"
+          style="width:100%;height:100%;object-fit:cover;border-radius:8px"></div>
+      <div class="logo-text">Ronix<span>Fixes</span></div>
+    </a>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="filterOS('all')">
+        <span class="tab-icon">🌐</span> All Fixes <span class="tab-count" id="count-all">12</span>
+      </div>
+      <div class="nav-tab" onclick="filterOS('android')">
+        <span class="tab-icon">🤖</span> Android <span class="tab-count" id="count-android">4</span>
+      </div>
+      <div class="nav-tab" onclick="filterOS('windows')">
+        <span class="tab-icon">🪟</span> Windows <span class="tab-count" id="count-windows">4</span>
+      </div>
+      <div class="nav-tab" onclick="filterOS('mac')">
+        <span class="tab-icon">🍎</span> <span class="mac-desktop-label">iOS & Mac</span><span
+          class="mac-mobile-label">iOS</span> <span class="tab-count" id="count-mac">2</span>
+      </div>
+      <div class="nav-tab" onclick="window.location.href='general.html'" style="cursor:pointer;">
+        <span class="tab-icon">⚙️</span> General Support <span class="tab-count" id="count-general">↗</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div id="google_translate_element"></div>
+      <button class="lang-btn" onclick="openLangModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path
+            d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        <span id="lang-btn-label">English</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <button class="btn-submit"
+        onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc0PUjiy8umBbI4ZhkBgo63yrCUuzQlThhp39WLJo4hE4Qn0w/viewform?usp=publish-editor','_blank')">+
+        Submit Fix</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- HERO SEARCH -->
+    <div class="hero">
+      <div class="hero-title">Search for <span>Fixes</span></div>
+      <div class="hero-sub">Community-sourced fixes for common Roblox errors · Open source · Always free</div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="searchInput" type="text"
+          placeholder="e.g. 'crash on launch', 'error 403', 'black screen'" oninput="handleSearch(this.value)">
+      </div>
+      <div class="search-tags">
+        <span class="stag" onclick="quickSearch('crash')">crash</span>
+        <span class="stag" onclick="quickSearch('error 403')">error 403</span>
+        <span class="stag" onclick="quickSearch('black screen')">black screen</span>
+        <span class="stag" onclick="quickSearch('lag')">lag / fps</span>
+        <span class="stag" onclick="quickSearch('install')">install failed</span>
+        <span class="stag" onclick="quickSearch('login')">login issues</span>
+        <span class="stag" onclick="quickSearch('internal error')">internal error</span>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-bar" style="justify-content: center; margin-bottom: 40px;">
+      <div class="stat-pill">
+        <div class="dot" style="background:#4fffb0"></div><span id="stat-fixes">12 Fixes</span>
+      </div>
+      <div class="stat-pill">
+        <div class="dot" style="background:#ff6b6b"></div><span>3 Trending</span>
+      </div>
+      <div class="stat-pill">
+        <div class="dot" style="background:#b06aff"></div><span>5 Contributors</span>
+      </div>
+      <div class="stat-pill">
+        <div class="dot" style="background:#ffd96b"></div><span>Last updated: today</span>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- FIX LIST -->
+      <div>
+        <div class="section-header">
+          <span class="section-title" id="section-label">All Fixes</span>
+          <button class="sort-btn" onclick="toggleSort()">Sort: Trending ▾</button>
+        </div>
+        <div id="fix-list"></div>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">🔎</div>
+          <div>No fixes found for "<span id="empty-query"></span>"</div>
+          <div style="margin-top:8px; color: var(--text-muted)">Be the first to <span
+              style="color:var(--accent);cursor:pointer"
+              onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc0PUjiy8umBbI4ZhkBgo63yrCUuzQlThhp39WLJo4hE4Qn0w/viewform?usp=publish-editor','_blank')">submit
+              a fix</span>!</div>
+        </div>
+      </div>
+
+      <!-- MOBILE CONTRIBUTORS (shown only on mobile) -->
+      <div class="mobile-contrib-section">
+        <div class="sidebar-title" style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+          ✨ <span>Top Contributors</span>
+        </div>
+        <div class="contrib-list">
+
+          <div class="contrib-item contrib-rank-1">
+            <div class="contrib-rank-badge">1</div>
+            <div class="contrib-avatar-wrap">
+              <img class="contrib-avatar-img" src="1.webp"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+              <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#b06aff,#7b3fa8)">J</div>
+            </div>
+            <div class="contrib-info">
+              <span class="contrib-name">Jerry</span>
+              <span class="contrib-role" style="color:#b06aff">S.Support</span>
+            </div>
+            <span class="contrib-fixes">13 fixes</span>
+          </div>
+
+          <div class="contrib-item contrib-rank-2">
+            <div class="contrib-rank-badge">2</div>
+            <div class="contrib-avatar-wrap">
+              <img class="contrib-avatar-img" src="2.webp"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+              <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#6bc5ff,#1a4caa)">R</div>
+            </div>
+            <div class="contrib-info">
+              <span class="contrib-name">Rift</span>
+              <span class="contrib-role" style="color:#6bc5ff">C.Manager</span>
+            </div>
+            <span class="contrib-fixes">5 fixes</span>
+          </div>
+
+          <div class="contrib-item contrib-rank-3">
+            <div class="contrib-rank-badge">3</div>
+            <div class="contrib-avatar-wrap">
+              <img class="contrib-avatar-img" src="PASTE_UNKNOWN_IMAGE_URL_HERE"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+              <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#888,#444)">?</div>
+            </div>
+            <div class="contrib-info">
+              <span class="contrib-name">Unknown People</span>
+              <span class="contrib-role" style="color:#888">Demoted</span>
+            </div>
+            <span class="contrib-fixes">4 fixes</span>
+          </div>
+
+          <div class="contrib-item">
+            <div class="contrib-rank-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">4</div>
+            <div class="contrib-avatar-wrap">
+              <img class="contrib-avatar-img" src="4.webp"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+              <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#4fffb0,#1a8c60)">J</div>
+            </div>
+            <div class="contrib-info">
+              <span class="contrib-name">Joe86845454</span>
+              <span class="contrib-role" style="color:#4fffb0">Moderator</span>
+            </div>
+            <span class="contrib-fixes">1 fix</span>
+          </div>
+
+          <div class="contrib-item">
+            <div class="contrib-rank-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">5</div>
+            <div class="contrib-avatar-wrap">
+              <img class="contrib-avatar-img" src="5.webp"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+              <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#ff6bdf,#a0208a)">D</div>
+            </div>
+            <div class="contrib-info">
+              <span class="contrib-name">dsadqa</span>
+              <span class="contrib-role" style="color:#4fffb0">Moderator</span>
+            </div>
+            <span class="contrib-fixes">1 fix</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-title">Browse by Platform</div>
+          <div class="os-list" id="os-list">
+            <div class="os-item active" onclick="filterOS('all')">
+              <div class="os-left"><span class="os-icon">🌐</span> All Platforms</div><span class="os-count">12</span>
+            </div>
+            <div class="os-item" onclick="filterOS('android')">
+              <div class="os-left"><span class="os-icon">🤖</span> Android</div><span class="os-count">4</span>
+            </div>
+            <div class="os-item" onclick="filterOS('windows')">
+              <div class="os-left"><span class="os-icon">🪟</span> Windows</div><span class="os-count">4</span>
+            </div>
+            <div class="os-item" onclick="filterOS('mac')">
+              <div class="os-left"><span class="os-icon">🍎</span> iOS & Mac</div><span class="os-count">2</span>
+            </div>
+            <div class="os-item" onclick="window.location.href='general.html'" style="cursor:pointer;">
+              <div class="os-left"><span class="os-icon">⚙️</span> General</div><span class="os-count">↗</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-title">Error Tags</div>
+          <div class="error-tags">
+            <span class="etag" onclick="quickSearch('crash')">crash</span>
+            <span class="etag" onclick="quickSearch('login')">login</span>
+            <span class="etag" onclick="quickSearch('install')">install</span>
+            <span class="etag" onclick="quickSearch('lag')">lag/fps</span>
+            <span class="etag" onclick="quickSearch('black screen')">black screen</span>
+            <span class="etag" onclick="quickSearch('error 403')">error 403</span>
+            <span class="etag" onclick="quickSearch('internal error')">internal error</span>
+            <span class="etag" onclick="quickSearch('update')">update</span>
+            <span class="etag" onclick="quickSearch('anticheat')">anticheat</span>
+          </div>
+        </div>
+
+        <div class="sidebar-card contrib-card-glow">
+          <div class="sidebar-title" style="display:flex;align-items:center;gap:6px;">
+            ✨ <span>Top Contributors</span>
+          </div>
+          <div class="contrib-list">
+
+            <!-- 1. Jerry -->
+            <div class="contrib-item contrib-rank-1">
+              <div class="contrib-rank-badge">1</div>
+              <div class="contrib-avatar-wrap">
+                <img class="contrib-avatar-img" src="1.webp"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+                <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#b06aff,#7b3fa8)">J</div>
+              </div>
+              <div class="contrib-info">
+                <span class="contrib-name">Jerry</span>
+                <span class="contrib-role" style="color:#b06aff">S.Support</span>
+              </div>
+              <span class="contrib-fixes">13 fixes</span>
+            </div>
+
+            <!-- 2. Rift -->
+            <div class="contrib-item contrib-rank-2">
+              <div class="contrib-rank-badge">2</div>
+              <div class="contrib-avatar-wrap">
+                <img class="contrib-avatar-img" src="2.webp"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+                <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#6bc5ff,#1a4caa)">R</div>
+              </div>
+              <div class="contrib-info">
+                <span class="contrib-name">Rift</span>
+                <span class="contrib-role" style="color:#6bc5ff">C.Manager</span>
+              </div>
+              <span class="contrib-fixes">5 fixes</span>
+            </div>
+
+            <!-- 3. Unknown People -->
+            <div class="contrib-item contrib-rank-3">
+              <div class="contrib-rank-badge">3</div>
+              <div class="contrib-avatar-wrap">
+                <img class="contrib-avatar-img" src="PASTE_UNKNOWN_IMAGE_URL_HERE"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+                <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#888,#444)">?</div>
+              </div>
+              <div class="contrib-info">
+                <span class="contrib-name">Unknown People</span>
+                <span class="contrib-role" style="color:#888">Demoted</span>
+              </div>
+              <span class="contrib-fixes">4 fixes</span>
+            </div>
+
+            <!-- 4. Joe86845454 -->
+            <div class="contrib-item">
+              <div class="contrib-rank-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">4</div>
+              <div class="contrib-avatar-wrap">
+                <img class="contrib-avatar-img" src="4.webp"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+                <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#4fffb0,#1a8c60)">J</div>
+              </div>
+              <div class="contrib-info">
+                <span class="contrib-name">Joe86845454</span>
+                <span class="contrib-role" style="color:#4fffb0">Moderator</span>
+              </div>
+              <span class="contrib-fixes">1 fix</span>
+            </div>
+
+            <!-- 5. dsadqa -->
+            <div class="contrib-item">
+              <div class="contrib-rank-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">5</div>
+              <div class="contrib-avatar-wrap">
+                <img class="contrib-avatar-img" src="5.webp"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+                <div class="contrib-avatar-fallback" style="background:linear-gradient(135deg,#ff6bdf,#a0208a)">D</div>
+              </div>
+              <div class="contrib-info">
+                <span class="contrib-name">dsadqa</span>
+                <span class="contrib-role" style="color:#4fffb0">Moderator</span>
+              </div>
+              <span class="contrib-fixes">1 fix</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">Submit a Fix</div>
+      <div class="modal-sub">Share a fix with the community — help others solve the same issue</div>
+      <label>Error / Issue Title</label>
+      <input type="text" id="new-title" placeholder="e.g. Roblox crashes on launch after Windows update">
+      <label>Platform</label>
+      <select id="new-os">
+        <option value="windows">🪟 Windows</option>
+        <option value="android">🤖 Android</option>
+        <option value="mac">🍎 iOS & Mac</option>
+        <option value="general">⚙️ General</option>
+      </select>
+      <label>Description</label>
+      <textarea id="new-desc" placeholder="Describe the error and what causes it..."></textarea>
+      <label>Fix Steps</label>
+      <textarea id="new-steps"
+        placeholder="1. Open Task Manager&#10;2. End Roblox processes&#10;3. Reinstall..."></textarea>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-post" onclick="submitFix()">Post Fix →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANEL (centered modal) -->
+  <div class="detail-panel" id="detail-panel" onclick="if(event.target===this)closePanel()">
+    <div class="detail-panel-inner">
+      <button class="panel-close" onclick="closePanel()">✕</button>
+      <div id="panel-content"></div>
+    </div>
+  </div>
+
+  <script>
+    const osIcons = { windows: '🪟', android: '🤖', mac: '🍎', general: '⚙️' };
+    const osLabels = { windows: 'Windows', android: 'Android', mac: 'iOS & Mac', general: 'General Support' };
+
+    let fixes = [
+      {
+        id: 1, os: 'windows', trending: true,
+        title: 'Module Missing , Pid Not Injected and Other Crash Issues -Part 2 Made By Jerry and Rift',
+        desc: 'While Injecting, this error pops up and it never injects',
+        tags: ['Module Missing', 'Pid Not Injected', 'windows'],
+        views: 10, helpful: 7, date: '2 days ago',
+        steps: [
+          { text: 'The Below Tutorial is of Internal Error though BUT' },
+          { text: 'It can also fix crash issues' },
+          { text: 'The tutorial shows reinstallion,anti-virus off, etc' },
+          { text: 'Press <strong>WIN + R</strong> on your keyboard and type <strong>%localappdata%</strong>.' },
+          { text: 'Find Roblox Folder and Delete it permanently' },
+          { text: 'Again Press <strong>WIN + R</strong> on your keyboard and type <strong>%appdata%</strong>.' },
+          { text: 'Find Ronix Folder and Delete it permanently' },
+          { text: 'Now Restart your pc and Inject' },
+          { text: 'If the issue persists, Try Creating a admin account on your pc and install Roblox and Ronix}' },
+          { text: 'If the issue persists, Please Wait for New Update from <strong>Team Ronix</strong>' },
+          { text: 'A tutorial is given below for help' },
+        ],
+        code: null,
+        video: 'https://www.youtube.com/embed/lMPS0LO8AZ0'
+      },
+      {
+        id: 2, os: 'windows', trending: true,
+        title: 'Ronix crashing on launch/not working',
+        desc: 'Ronix fails to open or crashes immediately due to missing system dependencies.',
+        tags: ['crash', 'install', 'windows'],
+        views: 980, helpful: 67, date: '3 days ago',
+        steps: [
+          { text: '1. The Following Installer(bat) will install the following things, Also The second installer will repair your system files if they are corrupted ' },
+          { text: '2. Install .NET Runtime 8.0' },
+          { text: '3. Install Microsoft Visual C++ Redistributable (x64 & x86)' },
+          { text: '4. Install Microsoft Edge WebView2 Runtime' },
+          { text: '5. Install DirectX End-User Runtime' },
+          { text: '6. Install .NET Framework 4.8' },
+          { text: '7. Restart your PC' },
+          { text: '8. Launch Ronix again' },
+          { text: '<strong>Note:</strong> You can get the installer from <a href="https://gofile.io/d/TBujQE" target="_blank"><strong>HERE</strong></a>' },
+        ],
+        code: null
+      },
+      {
+        id: 22, os: 'mac', trending: false,
+        title: 'How to Install Ronix iOS (Direct/Indirect Method - Outdated)',
+        desc: 'Guide to install Ronix on iOS using direct/indirect method. Not IPA method. If direct install fails, follow these steps.',
+        tags: ['ios', 'install', 'dns', 'ronix'],
+        views: 0, helpful: 0, date: 'recent',
+        steps: [
+          { text: '<strong>Note:</strong> This is NOT the IPA method. Method created by 8ygh.' },
+          { text: 'Make sure your VPN is turned <strong>OFF</strong> at all times.' },
+          { text: 'Install the Anti-Revoke DNS profile: https://github.com/down/dns/releases/download/dns/dns.mobileconfig' },
+          { text: 'Go to Settings → General → VPN & Device Management and verify the DNS profile.' },
+          { text: 'Open: https://down.github.io/ and try all available install options.' },
+          { text: 'If one install works, go back to Settings → General → VPN & Device Management and verify the certificate.' },
+          { text: 'You are ready to use it. Avoid using VPN and do not power off your device frequently.' }
+        ],
+        code: null
+      },
+      {
+        id: 3, os: 'windows', trending: false,
+        title: 'Microsoft Edge cannot Read or Write to it Data Directory',
+        desc: 'Made By Jerry and Aiden',
+        tags: ['cannot read or write', 'launch', 'windows'],
+        views: 2300, helpful: 112, date: '1 day ago',
+        steps: [
+          { text: 'Press <code>Win + E</code> to open File Explorer.' },
+          { text: 'In the address bar, type <code>C:\\Users\\[YourUsername]\\</code>.' },
+          { text: 'Replace <strong>[YourUsername]</strong> with your actual Windows account name.' },
+          { text: 'If prompted for access, click <strong>Allow</strong> or <strong>Continue</strong>.' },
+          { text: 'Restart the application.' }
+        ],
+        code: 'C:\\Users\\YOU\\'
+      },
+      {
+        id: 23, os: 'windows', trending: true,
+        title: 'Fix RakNet Desync Not Working In Windows By Rift and KrondraZ',
+        desc: 'By Rift and KrondraZ',
+        tags: ['raknet', 'desync', 'script', 'ronix'],
+        views: 0, helpful: 0, date: '2 days ago',
+        steps: [
+          { text: 'Run the following script in your executor:' },
+          { text: '<code>loadstring(game:HttpGet("https://raw.githubusercontent.com/sg465c5fv2-droid/RakNet/refs/heads/main/RakNet%20KroZ"))()</code>' },
+          { text: '<strong>Note:</strong> This script does not support Steal A Brainrot.' }
+        ],
+        code: null
+      },
+      {
+        id: 24, os: 'windows', trending: true,
+        title: 'Fix Direct3D 11 Error By Dsadqa and Angel',
+        desc: 'Direct3D 11 error may occur due to incorrect rendering settings in Roblox launchers.',
+        tags: ['direct3d', 'error', 'rendering', 'windows'],
+        views: 0, helpful: 0, date: 'recent',
+        steps: [
+          { text: 'Download any Roblox launcher (e.g., Bloxstrap, Fishstrap, Voistrap, Frosttrap).' },
+          { text: 'Open the launcher and go to <strong>Settings</strong>.' },
+          { text: 'Navigate to <strong>Fast Flags</strong>.' },
+          { text: 'Scroll until you find <strong>Preferred Rendering Mode</strong> (or similar option).' },
+          { text: 'Set it to <strong>DirectX 11</strong>.' }
+        ],
+        code: null
+      },
+      {
+        id: 4, os: 'windows', trending: true,
+        title: 'Ronix not able to install due to SSL Handshake Error-By Jerry',
+        desc: 'While Installing Ronix, this error pops up and it never installs',
+        tags: ['SSL Handshake Error', 'install', 'windows'],
+        views: 760, helpful: 44, date: '5 days ago',
+        steps: [
+          { text: 'Install 1.1.1.1 VPN' },
+          { text: 'Open it and then run Ronix-Installer again' },
+          { text: 'It will work' },
+          { text: '<strong>Note:</strong> You can get the installer from <a href="https://one.one.one.one" target="_blank"><strong>HERE</strong></a>' }
+        ],
+        code: null
+      },
+      {
+        id: 26, os: 'mac', trending: false,
+        title: 'How to Install Ronix IPA (Outdated)',
+        desc: 'Guide to install Ronix IPA on iOS with download links, DNS profile, and signing method.',
+        tags: ['ios', 'ipa', 'install', 'ronix'],
+        views: 0, helpful: 0, date: 'recent',
+        steps: [
+          { text: '<strong>Download Ronix IPA:</strong>' },
+          { text: 'Global Version: https://www.mediafire.com/file/09rkqzjkegxnatq/Ronix_2.711.871.ipa/file' },
+          { text: 'VNG Version: https://www.mediafire.com/file/2oj78g5lbhzx3wl/Ronix_VN_2.709.869.ipa/file' },
+
+          { text: '<strong>Install DNS Profile:</strong>' },
+          { text: 'https://github.com/8ygh/dns/releases/download/dns/dns.mobileconfig' },
+
+          { text: '<strong>Sign the IPA using K-sign:</strong>' },
+          { text: 'https://api.khoindvn.io.vn/JnAsbd' },
+
+          { text: 'Follow the video tutorial below for full installation steps.' }
+        ],
+        video: 'https://www.youtube.com/embed/GS_Pk0v9Nqg?si=YwpfncHyVyWTXFL6',
+        code: null
+      },
+      {
+        id: 27, os: 'android', trending: true,
+        title: 'Ronix Redirects to Discord / Not Updated Error',
+        desc: 'App redirects to Discord or shows update message when using an outdated version of Ronix.',
+        tags: ['update', 'apk', 'ronix', 'error'],
+        views: 0, helpful: 0, date: 'recent',
+        steps: [
+          { text: 'Uninstall the current version of Ronix from your device.' },
+          { text: 'Download the latest APK from: https://wearedevs.net/d/Ronix' },
+          { text: 'Install the newly downloaded APK.' },
+          { text: 'Open Ronix again — the issue should now be fixed.' }
+        ],
+        code: null
+      },
+      {
+        id: 25, os: 'windows', trending: true,
+        title: 'Injected Successfully but Script Not Executing',
+        desc: 'Scripts may not execute or appear in-game even after successful injection due to session or tab issues.',
+        tags: ['inject', 'script', 'not working', 'ronix'],
+        views: 0, helpful: 0, date: 'recent',
+        steps: [
+          { text: 'After injecting, right-click your Roblox game tab and click <strong>Refresh</strong>.' },
+          { text: 'Once the game reloads, try executing your script again.' },
+          { text: 'If the issue persists, follow this tutorial: http://youtube.com/post/UgkxkpVi6-z7FHYA-Q0-ksp2oszuE5gUBkNt?si=xWl3jOuTxZ-SETmC' }
+        ],
+        code: null
+      },
+      {
+        id: 5, os: 'windows', trending: false,
+        title: 'How to Use Ronix in Android Emulator',
+        desc: 'By Jerry',
+        tags: ['android', 'emulator', 'windows'],
+        views: 1100, helpful: 78, date: '1 week ago',
+        steps: [
+          { text: 'Download an emulator. Recommended: <strong>Mumu Player</strong>.' },
+          { text: 'Install <strong>Ronix APK 64-bit</strong>.' },
+          { text: 'Global version: <a href="https://wrdcdn.net/r/154522/1768292268838/Ronix_64Bits_Direct.apk">Download</a>' },
+          { text: 'Vietnam version: <a href="https://wrdcdn.net/r/154522/1765771976323/Ronix_VNG_64Bits.apk">Download</a>' },
+          { text: 'Open <strong>Roblox</strong>, log in, and start a game.' },
+          { text: 'Complete the key system for Ronix Android: <a href="https://ads.luarmor.net/get_key?for=RonxiKey2-eEPAuyLEcNsd">Get Key</a>' },
+          { text: 'Run the script you want to execute.' },
+          { text: 'For Ronix Hub only, use key system: <a href="https://ads.luarmor.net/get_key?for=Ronix_Hub_Key_Ststem-FIDnQWNJRPDQ">Get Key</a>' }
+        ],
+        code: null
+      },
+      {
+        id: 6, os: 'windows', trending: true,
+        title: 'How to Auto-Execute In windows',
+        desc: 'By Jerry',
+        tags: ['auto-execute', 'windows', 'inject'],
+        views: 540, helpful: 31, date: '4 days ago',
+        steps: [
+          { text: 'Press <code>Win + R</code> to open Run.' },
+          { text: 'Type <code>%appdata%\\Ronix\\AutoExecute</code> and press Enter.' },
+          { text: 'Right click inside the folder and create a new <strong>.txt file</strong>.' },
+          { text: 'Open the file and paste your loadstring or script.' },
+          { text: 'Close the file and rename it from <strong>.txt</strong> to <strong>.lua</strong>.' }
+        ],
+        code: '%appdata%\\Ronix\\AutoExecute'
+      },
+      {
+        id: 7, os: 'windows', trending: false,
+        title: 'How to select an Instance (No instance selected) ',
+        desc: 'Made By Aiden',
+        tags: ['no-instance', 'windows'],
+        views: 320, helpful: 22, date: '6 days ago',
+        steps: [
+          { text: 'Click the <strong>four small squares</strong> on the left sidebar (looks like the Windows 11 logo).' },
+          { text: 'Find the <strong>tick box</strong> on the right side.' },
+          { text: 'Click the box to toggle it (checkmark on/off).' },
+          { text: 'If it is already unchecked, click it once to confirm.' },
+          { text: 'Click the <strong>Attach</strong> button at the bottom right (chain icon).' }
+        ],
+        code: null
+      },
+      {
+        id: 8, os: 'android', trending: false,
+        title: 'How to Auto-Execute on Ronix Android',
+        desc: 'By Faith',
+        tags: ['auto-execute', 'android'],
+        views: 430, helpful: 29, date: '1 week ago',
+        steps: [
+          { text: 'Download <strong>ZArchiver</strong> from the Play Store (skip if already installed).' },
+          { text: 'Open <strong>ZArchiver</strong> and locate the <strong>Ronix Exploits</strong> folder.' },
+          { text: 'Open it, then go into the <strong>AutoExec</strong> folder.' },
+          { text: 'Tap the <strong>➕ icon</strong> and select the <strong>file (paper) icon</strong> (last option).' },
+          { text: 'Name the file anything you want and press <strong>OK</strong>.' },
+          { text: 'Open the file with <strong>ZArchiver Text</strong>, paste your script, and save it.' },
+          { text: 'Open <strong>Roblox</strong> and your script will auto-execute automatically.' }
+        ],
+        code: null
+      },
+
+      {
+        id: 10, os: 'android', trending: false,
+        title: 'Roblox Crashes While Logging in',
+        desc: 'By jerry',
+        tags: ['android', 'crash', 'login'],
+        views: 610, helpful: 41, date: '2 weeks ago',
+        steps: [
+          { text: 'Log in with sign-in code as it will not crash the device' },
+          { text: 'once logged in there are less chances while crashing in-game' },
+        ],
+        code: null
+      },
+      {
+        id: 12, os: 'android', trending: false,
+        title: 'Ronix UI Not Popping up on first launch',
+        desc: 'Ronix UI is not popping up on first launch on some devices.',
+        tags: ['ronix', 'crash', 'android', 'ui'],
+        views: 0, helpful: 0, date: 'recent',
+        steps: [
+          { text: 'Restart Ronix/Roblox — most of the time this fixes the issue.' },
+          { text: 'If the issue started after updating the APK, uninstall the app completely.' },
+          { text: 'Reinstall Ronix again to fix mismatched or corrupted data.' },
+        ],
+        code: null
+      },
+      {
+        id: 13, os: 'windows', trending: false,
+        title: 'How to Fix Luarmor Infinite Loading?',
+        desc: 'When trying to do keysystem, the Luarmor page does not stop loading.',
+        tags: ['luarmor', 'infinity loading', 'windows'],
+        views: 870, helpful: 15, date: '3 days ago',
+        steps: [
+          { text: 'Click on the <strong>URL bar</strong> in your web browser.' },
+          { text: 'Remove <strong>"ads."</strong> from the URL and load the page.' },
+          { text: 'After the page loads, it may show <strong>Error 404</strong>.' },
+          { text: 'Add <strong>"ads."</strong> back into the URL.' },
+          { text: 'The page should now load correctly and fix the loading issue.' },
+          { text: 'If this does not work, watch the video below for help.' }
+        ],
+        code: null,
+        video: 'https://www.youtube.com/embed/z8EzduKGnVk'
+      },
+      {
+        id: 14, os: 'windows', trending: false,
+        title: 'How to fix error for Opening File For writing',
+        desc: 'During Installion of Ronix, This appears',
+        tags: ['windows', 'error', 'install'],
+        views: 870, helpful: 15, date: '3 days ago',
+        steps: [
+          { text: 'Right-click RonixExploit or the installer/bootstrapper and select <strong>Run as Administrator</strong>, then click Yes.' },
+          { text: 'Right-click RonixExploit or the installer/bootstrapper and open <strong>Properties</strong>.' },
+          { text: 'Go to the <strong>Security</strong> tab, select your user, and click <strong>Edit</strong>.' },
+          { text: 'Select your user again, enable <strong>Full Control</strong>, then click Apply → OK → OK.' },
+          { text: 'Restart your PC and try installing again.' },
+          { text: '<strong>Note:</strong> This error usually occurs during the installation of Ronix Windows.' }
+        ],
+        code: null
+      },
+      {
+        id: 15, os: 'windows', trending: false,
+        title: 'Ronix Hub Not Loading after Entering Key',
+        desc: 'By Jerry',
+        tags: ['ronix hub', 'not loading', 'key', 'windows'],
+        views: 1050, helpful: 55, date: '5 days ago',
+        steps: [
+          { text: '<strong>This method is NOT for these executors:</strong>' },
+          { text: '1. <strong>JJSploit</strong>' },
+          { text: '2. <strong>Solara</strong>' },
+          { text: '3. <strong>Xeno</strong>' },
+          { text: 'Go to your Roblox game and press <strong>F9</strong> or type <code>/console</code> after running the script.' },
+          { text: 'A console window will appear — take a screenshot.' },
+          { text: 'Create a <strong>support ticket</strong> and send the screenshot there.' },
+          { text: 'Staff will analyze it and report it to the developer if needed.' },
+          { text: 'If it is your issue, they will provide a possible fix.' }
+        ],
+        code: null
+      },
+
+    ];
+
+    let currentOS = 'all';
+    let currentSort = 'trending';
+    let currentSearch = '';
+
+    function renderFixes() {
+      let filtered = fixes.filter(f => {
+        const matchOS = currentOS === 'all' || f.os === currentOS;
+        const q = currentSearch.toLowerCase();
+        const matchSearch = !q || f.title.toLowerCase().includes(q) || f.desc.toLowerCase().includes(q) || f.tags.some(t => t.includes(q));
+        return matchOS && matchSearch;
+      });
+
+      if (currentSort === 'trending') {
+        filtered.sort((a, b) => (b.trending ? 1 : 0) - (a.trending ? 1 : 0) || b.views - a.views);
+      } else {
+        filtered.sort((a, b) => b.helpful - a.helpful);
+      }
+
+      const list = document.getElementById('fix-list');
+      const empty = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        document.getElementById('empty-query').textContent = currentSearch || currentOS;
+        return;
+      }
+      empty.style.display = 'none';
+
+      // Group by OS when viewing "all", otherwise flat list
+      let html = '';
+      if (currentOS === 'all' && !currentSearch) {
+        const order = ['windows', 'android', 'mac', 'general'];
+        const grouped = {};
+        order.forEach(k => { grouped[k] = []; });
+        filtered.forEach(f => { if (grouped[f.os]) grouped[f.os].push(f); else grouped['general'].push(f); });
+        let cardIdx = 0;
+        order.forEach(os => {
+          if (!grouped[os].length) return;
+          const osName = osLabels[os];
+          const icon = osIcons[os];
+          html += `<div class="group-header"><span class="group-icon">${icon}</span><span class="group-label">${osName} Fixes</span><span class="group-count">${grouped[os].length}</span></div>`;
+          html += grouped[os].map(f => renderCard(f, cardIdx++)).join('');
+        });
+      } else {
+        filtered.forEach((f, i) => { html += renderCard(f, i); });
+      }
+      list.innerHTML = html;
+    }
+
+    function renderCard(f, i) {
+      return `<div class="fix-card ${f.trending ? 'trending' : ''}" 
+         onclick="openPanel(${f.id})"
+         style="animation-delay: ${i * 0.06}s">
+      ${f.trending ? '<div class="trending-label"><span class="fire">🔥</span> Trending</div>' : ''}
+      <div class="card-top">
+        <div class="card-title">${f.title}</div>
+        <div class="card-badges">
+          ${f.trending ? '<span class="badge badge-red">Hot</span>' : ''}
+          <span class="badge badge-${osBadgeColor(f.os)}">${osLabels[f.os]}</span>
+        </div>
+      </div>
+      <div class="card-desc">${f.desc}</div>
+      <div class="card-meta">
+        <span>👁 ${f.views.toLocaleString()} views</span>
+        <span>✅ ${f.helpful} helpful</span>
+        <span>🏷 ${f.tags.slice(0, 3).map(t => '<code>' + t + '</code>').join(' ')}</span>
+        <span style="margin-left:auto">${f.date}</span>
+      </div>
+    </div>`;
+    }
+
+    function osBadgeColor(os) {
+      return { windows: 'blue', android: 'green', mac: 'yellow', general: 'purple' }[os] || 'purple';
+    }
+
+    function filterOS(os) {
+      currentOS = os;
+      document.querySelectorAll('.nav-tab').forEach((t, i) => {
+        const map = ['all', 'android', 'windows', 'mac'];
+        t.classList.toggle('active', map[i] === os);
+      });
+      document.querySelectorAll('.os-item').forEach((el, i) => {
+        const map = ['all', 'android', 'windows', 'mac'];
+        el.classList.toggle('active', map[i] === os);
+      });
+      const labels = { all: 'All Fixes', android: 'Android Fixes', windows: 'Windows Fixes', mac: 'iOS & Mac Fixes', general: 'General Support' };
+      document.getElementById('section-label').textContent = labels[os];
+      renderFixes();
+    }
+
+    function handleSearch(val) { currentSearch = val; renderFixes(); }
+    function quickSearch(q) {
+      document.getElementById('searchInput').value = q;
+      handleSearch(q);
+    }
+
+    function toggleSort() {
+      currentSort = currentSort === 'trending' ? 'helpful' : 'trending';
+      document.querySelector('.sort-btn').textContent = `Sort: ${currentSort === 'trending' ? 'Trending' : 'Most Helpful'} ▾`;
+      renderFixes();
+    }
+
+    function openPanel(id) {
+      const f = fixes.find(x => x.id === id);
+      if (!f) return;
+      f.views++;
+      const panel = document.getElementById('detail-panel');
+      document.getElementById('panel-content').innerHTML = `
+    <div class="panel-os">${osIcons[f.os]} ${osLabels[f.os]} ${f.trending ? '&nbsp;🔥 Trending' : ''}</div>
+    <div class="panel-title">${f.title}</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      ${f.tags.map(t => `<span class="badge badge-purple">${t}</span>`).join('')}
+    </div>
+    <div class="panel-desc">${f.desc}</div>
+    <div class="fix-section-title">Fix Steps</div>
+    ${f.steps.map((s, i) => {
+        let text = s.text;
+        const isNote = text.startsWith('<strong>Note:</strong>') || text.startsWith('Note:');
+        // Style bare URLs
+        // Only linkify bare URLs not already inside href=""
+        text = text.replace(/(?<!href=["'])(https?:\/\/[^\s<"]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;word-break:break-all;">$1</a>');
+        // Style existing <a> tags that don't already have a style
+        text = text.replace(/<a(?![^>]*style=)([^>]*)>/g, '<a$1 style="color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px;">');
+        return '<div class="fix-step" style="' + (isNote ? 'background:rgba(176,106,255,0.08);border-color:var(--accent);' : '') + '">' +
+          '<div class="step-num" style="' + (isNote ? 'background:var(--accent);color:#fff;font-size:13px;' : '') + '">' + (isNote ? '!' : i + 1) + '</div>' +
+          '<div class="step-text">' + text + '</div></div>';
+      }).join('')}
+    ${f.code ? `<div class="fix-section-title" style="margin-top:16px">Reference Path / Command</div><div class="code-block">${f.code}</div>` : ''}
+    ${f.video ? `
+      <div class="fix-section-title" style="margin-top:20px">Video Tutorial</div>
+      <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;margin-top:8px;border:1px solid var(--border);">
+        <iframe
+          src="${f.video}"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:10px;border:none;">
+        </iframe>
+      </div>` : ''}
+    <div class="helpful-bar">
+      <button class="btn-helpful" onclick="markHelpful(${f.id},1)">✅ Helpful (${f.helpful})</button>
+      <button class="btn-helpful btn-not-helpful" onclick="markHelpful(${f.id},0)">❌ Not Helpful</button>
+    </div>
+  `;
+      panel.classList.add('open');
+      renderFixes();
+    }
+
+    function closePanel() {
+      document.getElementById('detail-panel').classList.remove('open');
+    }
+
+    function markHelpful(id, val) {
+      const f = fixes.find(x => x.id === id);
+      if (val === 1) {
+        if (f) f.helpful++;
+        openPanel(id);
+      } else {
+        closePanel();
+      }
+    }
+
+    function openModal() { document.getElementById('modal').classList.add('open'); }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+    function submitFix() {
+      const title = document.getElementById('new-title').value.trim();
+      const os = document.getElementById('new-os').value;
+      const desc = document.getElementById('new-desc').value.trim();
+      const steps = document.getElementById('new-steps').value.trim();
+      if (!title || !desc || !steps) { alert('Please fill in all fields.'); return; }
+      const newFix = {
+        id: Date.now(), os, trending: false,
+        title, desc,
+        tags: [os, 'user-submitted'],
+        views: 0, helpful: 0, date: 'just now',
+        steps: steps.split('\n').filter(Boolean).map(s => ({ text: s.replace(/^\d+\.\s*/, '') })),
+        code: null
+      };
+      fixes.unshift(newFix);
+      document.getElementById('new-title').value = '';
+      document.getElementById('new-desc').value = '';
+      document.getElementById('new-steps').value = '';
+      closeModal();
+      filterOS('all');
+    }
+
+    document.getElementById('modal').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+
+    // Init
+    renderFixes();
+
+    // ── BACKGROUND: SHOOTING STARS + MOUSE FX ──
+    (function () {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, mouse = { x: -999, y: -999 };
+      let rafId = null;
+      let isVisible = true;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // ── STARS ──
+      const STAR_COUNT = 160;
+      const stars = Array.from({ length: STAR_COUNT }, () => ({
+        x: Math.random() * 9999,
+        y: Math.random() * 9999,
+        r: Math.random() * 1.1 + 0.2,
+        a: Math.random()
+      }));
+
+      // ── SHOOTING STARS ──
+      const shoots = [];
+      function spawnShoot() {
+        if (!isVisible) return;
+        const side = Math.random();
+        let x, y, angle;
+        if (side < 0.5) { x = Math.random() * W; y = 0; angle = Math.PI / 4 + (Math.random() - 0.5) * 0.4; }
+        else { x = 0; y = Math.random() * H * 0.5; angle = Math.PI / 6 + (Math.random() - 0.5) * 0.3; }
+        shoots.push({
+          x, y,
+          vx: Math.cos(angle) * (5 + Math.random() * 6),
+          vy: Math.sin(angle) * (5 + Math.random() * 6),
+          len: 60 + Math.random() * 100,
+          life: 1,
+          decay: 0.018 + Math.random() * 0.02,
+          color: Math.random() < 0.4 ? '#c87eff' : Math.random() < 0.5 ? '#ff7be8' : '#ffffff'
+        });
+      }
+      const shootInterval = setInterval(spawnShoot, 1200);
+      for (let i = 0; i < 3; i++) setTimeout(spawnShoot, i * 300);
+
+      // ── MOUSE PARTICLES — capped at 40 max ──
+      const particles = [];
+      const MAX_PARTICLES = 40;
+      let lastMX = -999, lastMY = -999;
+      window.addEventListener('mousemove', e => {
+        mouse.x = e.clientX; mouse.y = e.clientY;
+        const dx = mouse.x - lastMX, dy = mouse.y - lastMY;
+        const speed = Math.sqrt(dx * dx + dy * dy);
+        if (speed > 5 && particles.length < MAX_PARTICLES) {
+          const count = Math.min(Math.floor(speed / 8), 3);
+          for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = Math.random() * 1.5 + 0.4;
+            particles.push({
+              x: mouse.x, y: mouse.y,
+              vx: Math.cos(angle) * spd,
+              vy: Math.sin(angle) * spd - 0.4,
+              life: 1,
+              decay: 0.04 + Math.random() * 0.04,
+              r: Math.random() * 2 + 0.5,
+              color: ['#b06aff', '#ff6bdf', '#6bc5ff', '#4fffb0'][Math.floor(Math.random() * 4)]
+            });
+          }
+        }
+        lastMX = mouse.x; lastMY = mouse.y;
+      });
+
+      // ── MOUSE GLOW ──
+      let glowAlpha = 0;
+      window.addEventListener('mousemove', () => { glowAlpha = 1; });
+
+      // ── CLICK RIPPLE ──
+      window.addEventListener('click', e => {
+        const el = document.createElement('div');
+        el.className = 'ripple';
+        const size = 140 + Math.random() * 60;
+        el.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;width:${size}px;height:${size}px;border:2px solid rgba(176,106,255,0.5);box-shadow:0 0 10px rgba(176,106,255,0.25);`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 700);
+      });
+
+      // ── PAUSE WHEN TAB IS HIDDEN (fixes lag on return) ──
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          isVisible = false;
+          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+          // Clear accumulated particles so they don't burst on return
+          particles.length = 0;
+          shoots.length = 0;
+        } else {
+          isVisible = true;
+          lastMX = -999; lastMY = -999;
+          glowAlpha = 0;
+          if (!rafId) draw();
+        }
+      });
+
+      // ── RENDER LOOP ──
+      let t = 0;
+      let lastTime = 0;
+      function draw(ts) {
+        if (!isVisible) return;
+        rafId = requestAnimationFrame(draw);
+
+        // Delta-time cap: if >200ms has passed (tab was inactive), skip to avoid burst
+        const dt = ts ? Math.min(ts - lastTime, 50) : 16;
+        lastTime = ts || 0;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Background gradient
+        const bg = ctx.createRadialGradient(W * 0.5, 0, 0, W * 0.5, H * 0.4, H);
+        bg.addColorStop(0, '#1a0535');
+        bg.addColorStop(0.5, '#0d011f');
+        bg.addColorStop(1, '#050008');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Stars (twinkle)
+        t += 0.006;
+        stars.forEach(s => {
+          const twinkle = s.a + Math.sin(t * 1.5 + s.x) * 0.35;
+          ctx.globalAlpha = Math.max(0.08, Math.min(0.9, twinkle));
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(s.x % W, s.y % H, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // Shooting stars
+        for (let i = shoots.length - 1; i >= 0; i--) {
+          const s = shoots[i];
+          const spd = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+          const tailX = s.x - s.vx * (s.len / spd);
+          const tailY = s.y - s.vy * (s.len / spd);
+          const grad = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
+          grad.addColorStop(0, 'rgba(0,0,0,0)');
+          const rgb = s.color === '#ffffff' ? '255,255,255' : s.color === '#c87eff' ? '200,126,255' : '255,123,232';
+          grad.addColorStop(1, `rgba(${rgb},${s.life})`);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.5 * s.life;
+          ctx.shadowColor = s.color;
+          ctx.shadowBlur = 8 * s.life;
+          ctx.beginPath(); ctx.moveTo(tailX, tailY); ctx.lineTo(s.x, s.y); ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = s.life * 0.8;
+          const hg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 4);
+          hg.addColorStop(0, '#ffffff'); hg.addColorStop(1, 'transparent');
+          ctx.fillStyle = hg;
+          ctx.beginPath(); ctx.arc(s.x, s.y, 4 * s.life, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          s.x += s.vx; s.y += s.vy; s.life -= s.decay;
+          if (s.life <= 0 || s.x > W + 200 || s.y > H + 200) shoots.splice(i, 1);
+        }
+
+        // Mouse glow
+        if (mouse.x > 0) {
+          glowAlpha *= 0.95;
+          if (glowAlpha > 0.01) {
+            const mg = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 100);
+            mg.addColorStop(0, `rgba(176,106,255,${glowAlpha * 0.14})`);
+            mg.addColorStop(0.5, `rgba(176,106,255,${glowAlpha * 0.05})`);
+            mg.addColorStop(1, 'transparent');
+            ctx.fillStyle = mg;
+            ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 100, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        // Mouse trail particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          ctx.globalAlpha = p.life * 0.75;
+          ctx.shadowColor = p.color; ctx.shadowBlur = 6;
+          ctx.fillStyle = p.color;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= p.decay;
+          if (p.life <= 0) particles.splice(i, 1);
+        }
+        ctx.globalAlpha = 1;
+      }
+      draw();
+    })();
+  </script>
+  <!-- LANGUAGE MODAL -->
+  <div class="lang-modal-overlay" id="langModal">
+    <div class="lang-modal">
+      <div class="lang-modal-header">
+        <div class="lang-modal-title">🌐 Select Language</div>
+        <div class="lang-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input class="lang-search" id="langSearch" placeholder="Search language..." oninput="filterLangs(this.value)">
+        </div>
+        <button class="lang-close" onclick="closeLangModal()">✕</button>
+      </div>
+      <div class="lang-list" id="langList"></div>
+    </div>
+  </div>
+
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <button class="mobile-nav-item active" id="mnav-all" onclick="mobileNav('all')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path
+            d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        All
+        <div class="nav-dot"></div>
+      </button>
+      <button class="mobile-nav-item" id="mnav-android" onclick="mobileNav('android')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18V9a6 6 0 0 1 12 0v9" />
+          <path d="M6 18a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1H6v1z" />
+          <path d="M4 9h16" />
+          <path d="M9 3l1.5 3M15 3l-1.5 3" />
+        </svg>
+        Android
+        <div class="nav-dot"></div>
+      </button>
+      <button class="mobile-nav-item" id="mnav-windows" onclick="mobileNav('windows')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="8" height="8" />
+          <rect x="13" y="3" width="8" height="8" />
+          <rect x="3" y="13" width="8" height="8" />
+          <rect x="13" y="13" width="8" height="8" />
+        </svg>
+        Windows
+        <div class="nav-dot"></div>
+      </button>
+      <button class="mobile-nav-item" id="mnav-mac" onclick="mobileNav('mac')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+          <path d="M8.5 14.5s1-3 3.5-3 3.5 3 3.5 3" />
+          <path d="M9 9h.01M15 9h.01" />
+        </svg>
+        iOS
+        <div class="nav-dot"></div>
+      </button>
+      <button class="mobile-nav-item" id="mnav-submit"
+        onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc0PUjiy8umBbI4ZhkBgo63yrCUuzQlThhp39WLJo4hE4Qn0w/viewform?usp=publish-editor','_blank')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v8M8 12h8" />
+        </svg>
+        Submit
+        <div class="nav-dot"></div>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    const LANGUAGES = [
+      { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }, { code: 'sq', name: 'Albanian', flag: '🇦🇱' },
+      { code: 'am', name: 'Amharic', flag: '🇪🇹' }, { code: 'ar', name: 'Arabic', flag: '🇸🇦' }, { code: 'hy', name: 'Armenian', flag: '🇦🇲' },
+      { code: 'az', name: 'Azerbaijani', flag: '🇦🇿' }, { code: 'eu', name: 'Basque', flag: '🏳️' }, { code: 'be', name: 'Belarusian', flag: '🇧🇾' },
+      { code: 'bn', name: 'Bengali', flag: '🇧🇩' }, { code: 'bs', name: 'Bosnian', flag: '🇧🇦' }, { code: 'bg', name: 'Bulgarian', flag: '🇧🇬' },
+      { code: 'ca', name: 'Catalan', flag: '🏳️' }, { code: 'ceb', name: 'Cebuano', flag: '🇵🇭' }, { code: 'zh-CN', name: 'Chinese (Simplified)', flag: '🇨🇳' },
+      { code: 'zh-TW', name: 'Chinese (Traditional)', flag: '🇹🇼' }, { code: 'co', name: 'Corsican', flag: '🏳️' }, { code: 'hr', name: 'Croatian', flag: '🇭🇷' },
+      { code: 'cs', name: 'Czech', flag: '🇨🇿' }, { code: 'da', name: 'Danish', flag: '🇩🇰' }, { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+      { code: 'eo', name: 'Esperanto', flag: '🏳️' }, { code: 'et', name: 'Estonian', flag: '🇪🇪' }, { code: 'fi', name: 'Finnish', flag: '🇫🇮' },
+      { code: 'fr', name: 'French', flag: '🇫🇷' }, { code: 'fy', name: 'Frisian', flag: '🏳️' }, { code: 'gl', name: 'Galician', flag: '🏳️' },
+      { code: 'ka', name: 'Georgian', flag: '🇬🇪' }, { code: 'de', name: 'German', flag: '🇩🇪' }, { code: 'el', name: 'Greek', flag: '🇬🇷' },
+      { code: 'gu', name: 'Gujarati', flag: '🇮🇳' }, { code: 'ht', name: 'Haitian Creole', flag: '🇭🇹' }, { code: 'ha', name: 'Hausa', flag: '🏳️' },
+      { code: 'haw', name: 'Hawaiian', flag: '🇺🇸' }, { code: 'he', name: 'Hebrew', flag: '🇮🇱' }, { code: 'hi', name: 'Hindi', flag: '🇮🇳' },
+      { code: 'hmn', name: 'Hmong', flag: '🏳️' }, { code: 'hu', name: 'Hungarian', flag: '🇭🇺' }, { code: 'is', name: 'Icelandic', flag: '🇮🇸' },
+      { code: 'ig', name: 'Igbo', flag: '🇳🇬' }, { code: 'id', name: 'Indonesian', flag: '🇮🇩' }, { code: 'ga', name: 'Irish', flag: '🇮🇪' },
+      { code: 'it', name: 'Italian', flag: '🇮🇹' }, { code: 'ja', name: 'Japanese', flag: '🇯🇵' }, { code: 'jw', name: 'Javanese', flag: '🇮🇩' },
+      { code: 'kn', name: 'Kannada', flag: '🇮🇳' }, { code: 'kk', name: 'Kazakh', flag: '🇰🇿' }, { code: 'km', name: 'Khmer', flag: '🇰🇭' },
+      { code: 'rw', name: 'Kinyarwanda', flag: '🇷🇼' }, { code: 'ko', name: 'Korean', flag: '🇰🇷' }, { code: 'ku', name: 'Kurdish', flag: '🏳️' },
+      { code: 'ky', name: 'Kyrgyz', flag: '🇰🇬' }, { code: 'lo', name: 'Lao', flag: '🇱🇦' }, { code: 'la', name: 'Latin', flag: '🏛️' },
+      { code: 'lv', name: 'Latvian', flag: '🇱🇻' }, { code: 'lt', name: 'Lithuanian', flag: '🇱🇹' }, { code: 'lb', name: 'Luxembourgish', flag: '🇱🇺' },
+      { code: 'mk', name: 'Macedonian', flag: '🇲🇰' }, { code: 'mg', name: 'Malagasy', flag: '🇲🇬' }, { code: 'ms', name: 'Malay', flag: '🇲🇾' },
+      { code: 'ml', name: 'Malayalam', flag: '🇮🇳' }, { code: 'mt', name: 'Maltese', flag: '🇲🇹' }, { code: 'mi', name: 'Maori', flag: '🇳🇿' },
+      { code: 'mr', name: 'Marathi', flag: '🇮🇳' }, { code: 'mn', name: 'Mongolian', flag: '🇲🇳' }, { code: 'my', name: 'Myanmar (Burmese)', flag: '🇲🇲' },
+      { code: 'ne', name: 'Nepali', flag: '🇳🇵' }, { code: 'no', name: 'Norwegian', flag: '🇳🇴' }, { code: 'ny', name: 'Nyanja (Chichewa)', flag: '🇲🇼' },
+      { code: 'or', name: 'Odia (Oriya)', flag: '🇮🇳' }, { code: 'ps', name: 'Pashto', flag: '🇦🇫' }, { code: 'fa', name: 'Persian', flag: '🇮🇷' },
+      { code: 'pl', name: 'Polish', flag: '🇵🇱' }, { code: 'pt', name: 'Portuguese', flag: '🇵🇹' }, { code: 'pa', name: 'Punjabi', flag: '🇮🇳' },
+      { code: 'ro', name: 'Romanian', flag: '🇷🇴' }, { code: 'ru', name: 'Russian', flag: '🇷🇺' }, { code: 'sm', name: 'Samoan', flag: '🇼🇸' },
+      { code: 'gd', name: 'Scots Gaelic', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' }, { code: 'sr', name: 'Serbian', flag: '🇷🇸' }, { code: 'st', name: 'Sesotho', flag: '🇱🇸' },
+      { code: 'sn', name: 'Shona', flag: '🇿🇼' }, { code: 'sd', name: 'Sindhi', flag: '🇵🇰' }, { code: 'si', name: 'Sinhala', flag: '🇱🇰' },
+      { code: 'sk', name: 'Slovak', flag: '🇸🇰' }, { code: 'sl', name: 'Slovenian', flag: '🇸🇮' }, { code: 'so', name: 'Somali', flag: '🇸🇴' },
+      { code: 'es', name: 'Spanish', flag: '🇪🇸' }, { code: 'su', name: 'Sundanese', flag: '🇮🇩' }, { code: 'sw', name: 'Swahili', flag: '🇰🇪' },
+      { code: 'sv', name: 'Swedish', flag: '🇸🇪' }, { code: 'tl', name: 'Tagalog (Filipino)', flag: '🇵🇭' }, { code: 'tg', name: 'Tajik', flag: '🇹🇯' },
+      { code: 'ta', name: 'Tamil', flag: '🇮🇳' }, { code: 'tt', name: 'Tatar', flag: '🏳️' }, { code: 'te', name: 'Telugu', flag: '🇮🇳' },
+      { code: 'th', name: 'Thai', flag: '🇹🇭' }, { code: 'tr', name: 'Turkish', flag: '🇹🇷' }, { code: 'tk', name: 'Turkmen', flag: '🇹🇲' },
+      { code: 'uk', name: 'Ukrainian', flag: '🇺🇦' }, { code: 'ur', name: 'Urdu', flag: '🇵🇰' }, { code: 'ug', name: 'Uyghur', flag: '🏳️' },
+      { code: 'uz', name: 'Uzbek', flag: '🇺🇿' }, { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' }, { code: 'cy', name: 'Welsh', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿' },
+      { code: 'xh', name: 'Xhosa', flag: '🇿🇦' }, { code: 'yi', name: 'Yiddish', flag: '🏳️' }, { code: 'yo', name: 'Yoruba', flag: '🇳🇬' },
+      { code: 'zu', name: 'Zulu', flag: '🇿🇦' }
+    ];
+
+    let currentLang = 'en';
+    let filteredLangs = [...LANGUAGES];
+
+    function renderLangList() {
+      const list = document.getElementById('langList');
+      if (filteredLangs.length === 0) {
+        list.innerHTML = '<div class="lang-no-results">No languages found</div>';
+        return;
+      }
+      list.innerHTML = filteredLangs.map(l => `
+    <div class="lang-item ${l.code === currentLang ? 'active' : ''}" onclick="selectLang('${l.code}','${l.name}')">
+      <span class="lang-item-flag">${l.flag}</span>
+      <span>${l.name}</span>
+    </div>
+  `).join('');
+    }
+
+    function filterLangs(query) {
+      filteredLangs = LANGUAGES.filter(l => l.name.toLowerCase().includes(query.toLowerCase()));
+      renderLangList();
+    }
+
+    function openLangModal() {
+      document.getElementById('langModal').classList.add('open');
+      document.getElementById('langSearch').value = '';
+      filteredLangs = [...LANGUAGES];
+      renderLangList();
+      setTimeout(() => document.getElementById('langSearch').focus(), 100);
+    }
+
+    function closeLangModal() {
+      document.getElementById('langModal').classList.remove('open');
+    }
+
+    function selectLang(code, name) {
+      currentLang = code;
+      document.getElementById('lang-btn-label').textContent = name;
+      closeLangModal();
+
+      if (code === 'en') {
+        // Restore original — go to plain URL
+        window.location.href = window.location.origin + window.location.pathname;
+        return;
+      }
+
+      // Use Google Translate website translator — 100% reliable
+      const pageUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+      window.location.href = `https://translate.google.com/translate?sl=en&tl=${code}&u=${pageUrl}`;
+    }
+
+    function mobileNav(filter) {
+      // Update active state
+      document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+      const btn = document.getElementById('mnav-' + filter);
+      if (btn) btn.classList.add('active');
+      // Update desktop tabs too
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      filterOS(filter);
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('langModal').addEventListener('click', function (e) {
+      if (e.target === this) closeLangModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeLangModal();
+    });
+  </script>
+</body>
+
+</html>
